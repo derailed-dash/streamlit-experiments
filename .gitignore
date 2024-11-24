@@ -42,7 +42,6 @@ coverage.xml
 secrets*
  
 # Random
-.*/
 .vscode
 *.log
 desktop.ini
