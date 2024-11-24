@@ -23,7 +23,7 @@ def reload_counter():
     st.write(f"We've reloaded {st.session_state.reload_count} times")
 
 def present_array_data():
-    st.markdown("## Working with arrays and dataframes") # Headings automatically get links
+    st.subheader("Working with arrays and dataframes") # Headings automatically get links
     st.write(f"A random array of 5 rows and 10 columns, with normal distribution about 0.")
     # This array WOULD BE recreated with each page interaction
     # So let's store it in a session variable
@@ -64,17 +64,15 @@ def present_array_data():
 
 @st.cache_data()
 def quadratic_demo():
-    st.markdown("## Demonstrating a Quadratic")
     x = np.arange(-10, 11, 1)  # Creates a NumPy array from -10 to 10
     y = x**2
     return pd.DataFrame({'x': x, 'y': y}) 
 
 @st.cache_data()
 def linear_plot_demo():
-    st.markdown("## Demonstrating Linear Plot")
     linear_df = pd.DataFrame({
-    'first column': [1, 2, 3, 4],
-    'second column': [10, 20, 30, 40]
+        'first column': [1, 2, 3, 4],
+        'second column': [10, 20, 30, 40]
     })
     linear_df['index'] = linear_df.index # Create new column for x axis
     return linear_df
@@ -105,42 +103,47 @@ def main():
     st.markdown("---") # Horizontal rule
     present_array_data()
 
-    st.markdown("---")
     quadratic_df = quadratic_demo()
     linear_df = linear_plot_demo()
-
-    ######## Build Sidebar ########
-    linear_chart_checkbox = st.sidebar.checkbox('Show linear chart on main panel')
-    quadratic_chart_checkbox = st.sidebar.checkbox('Show quadratic chart on main panel', value=True)
     
+    ######## Build Sidebar ########
+    st.sidebar.subheader("Contact")    
     add_selectbox = st.sidebar.selectbox(
         'How would you like to be contacted?',
         ('Email', 'Home phone', 'Mobile phone')
     )
-
     st.sidebar.write("You selected: ", add_selectbox)
 
-    # Add a slider to the sidebar:
+    # Add a slider to the sidebar
+    st.sidebar.subheader("Range")   
     add_slider = st.sidebar.slider(
         'Select a range of values',
         0.0, 100.0, (25.0, 75.0)
     )
-
     st.sidebar.write("You selected: ", add_slider)
-
+    
+    st.sidebar.subheader("Charts")
     # This expander will only show if we've checked a chart in the menu
-    with st.expander("Expand charts", expanded=True): 
+    with st.expander("Expand charts", expanded=True):
+        quadratic_chart_checkbox = st.sidebar.checkbox('Show quadratic chart on main panel', value=True)
+        if quadratic_chart_checkbox:
+            st.subheader("Demonstrating a Quadratic")
+            # Or we could use markdown, like this:
+            # st.markdown("## Demonstrating a Quadratic")
+            st.line_chart(quadratic_df['y'], x_label="x", y_label="y")
+        
+        linear_chart_checkbox = st.sidebar.checkbox('Show linear chart on main panel')
         if linear_chart_checkbox:
             # Let's put the chart in the main panel
+            st.subheader("Demonstrating Linear Plot")
             st.line_chart(linear_df, x='index', y=['first column', 'second column'])
             # st.sidebar.line_chart(linear_df)
 
-        if quadratic_chart_checkbox:
-            st.line_chart(quadratic_df['y'], x_label="x", y_label="y")
-
-    chosen = st.sidebar.radio(
-        'Sorting hat:',
-        ("Gryffindor", "Ravenclaw", "Hufflepuff", "Slytherin"), index=3)
+    st.sidebar.subheader("Sorting Hat")
+    chosen = st.sidebar.radio(label="Sorting Hat", 
+                              label_visibility="collapsed", # Hidden and collapsed
+                              options=("Gryffindor", "Ravenclaw", "Hufflepuff", "Slytherin"), 
+                              index=3)
     st.sidebar.write(f"You are in _{chosen}_ house!")
     ######## End Build Sidebar ########
 
