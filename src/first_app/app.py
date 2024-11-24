@@ -1,3 +1,4 @@
+import random
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -22,52 +23,58 @@ def reload_counter():
         
     st.write(f"We've reloaded {st.session_state.reload_count} times")
 
-def present_array_data():
-    st.subheader("Working with arrays and dataframes") # Headings automatically get links
-    st.write(f"A random array of 5 rows and 10 columns, with normal distribution about 0.")
-    # This array WOULD BE recreated with each page interaction
-    # So let's store it in a session variable
-    if "rand_array" not in st.session_state:
-        # Use a normal distribution with mean of 0 and std dev of 1
-        st.session_state.rand_array = np.random.randn(5, 10)
-
-    col_labels = st.session_state.rand_array.shape[1]
-    row_labels = [chr(ord('A') + i) 
-                for i in range(st.session_state.rand_array.shape[0])] # Create labels 'A', 'B', 'C', etc.
-
-    df = pd.DataFrame(
-        st.session_state.rand_array,
-        index=row_labels,
-        columns=('c %d' % i for i in range(col_labels)))
-
-    st.write(f"Plotted as a line chart...")
-    st.line_chart(df.T, x_label="Col")
-
-    with st.expander("Expand tables and plots...", expanded=False):  
-        st.write("Write array using magic command...")
-        st.session_state.rand_array # print using magic command - an alias for st.write()
-
-        st.write(f"Plotted as a scatter chart, with data transposed...")
-        st.scatter_chart(df, x_label="Col")        
-        
-        # Create two cols
-        left_column, right_column = st.columns(2)
-
-        left_column.write("Write array as interactive dataframe...")
-        left_column.dataframe(st.session_state.rand_array)
-
-        right_column.write("With as DF with Pandas Styler, highlighting max...")
-        right_column.dataframe(df.style.highlight_max(axis=0))
-        
-        st.write("Write array as static table...")
-        st.table(df)
-
 @st.cache_data()
 def quadratic_demo():
     x = np.arange(-10, 11, 1)  # Creates a NumPy array from -10 to 10
     y = x**2
     return pd.DataFrame({'x': x, 'y': y}) 
 
+def generate_meow_data():
+    if "meow_df" in st.session_state:
+        return st.session_state.meow_df
+    
+    days = ['Monday', 'Tuesday', 'Wednesday']
+    meow_data = {}
+
+    for day in days:
+        hourly_meows = []
+        for hour in range(24):
+            # Base meow rate
+            meows = random.randint(1, 5)
+
+            # Add peaks for dinner times (7:00 and 16:00)
+            if hour in [7, 16]:
+                meows += random.randint(10, 20)  # Increased meows around dinner
+            elif hour in [6, 8, 15, 17]: # make it more realistic with tapering up and down
+                meows += random.randint(5, 10)
+
+            hourly_meows.append(meows)
+        meow_data[day] = hourly_meows
+
+    # Generate DF with dimensions of 5 cols and 24 rows
+    meow_df = pd.DataFrame(meow_data)
+    st.session_state.meow_df = meow_df
+    return meow_df
+
+def present_meow_data(df: pd.DataFrame):
+    st.subheader("Meow Data") # Headings automatically get links
+    with st.expander("Expand data and plots...", expanded=False):  
+        # Create two cols
+        left_column, right_column = st.columns(2)
+    
+        left_column.write("Write array as interactive dataframe...")
+        left_column.dataframe(df)
+    
+        right_column.write("With DF with Pandas Styler, highlighting max...")
+        right_column.dataframe(df.style.highlight_max(axis=0))
+        
+        st.write("Write static table...")
+        st.table(df)
+        
+        st.bar_chart(df, x_label="Hour", y_label="Meows")
+        st.line_chart(df, x_label="Hour", y_label="Meows")
+        st.scatter_chart(df, x_label="Hour", y_label="Meows")
+        
 @st.cache_data()
 def linear_plot_demo():
     linear_df = pd.DataFrame({
@@ -101,11 +108,14 @@ def main():
     reload_counter()
     st.write("_Retrieve a secret:_ ", st.secrets["my_secret"])
     st.markdown("---") # Horizontal rule
-    present_array_data()
-
+    
+    meow_df = generate_meow_data()
+    present_meow_data(meow_df)
+    
+    st.subheader("Demonstrating Plotting", )
     quadratic_df = quadratic_demo()
     linear_df = linear_plot_demo()
-    
+
     ######## Build Sidebar ########
     st.sidebar.subheader("Contact")    
     add_selectbox = st.sidebar.selectbox(
@@ -127,15 +137,13 @@ def main():
     with st.expander("Expand charts", expanded=True):
         quadratic_chart_checkbox = st.sidebar.checkbox('Show quadratic chart on main panel', value=True)
         if quadratic_chart_checkbox:
-            st.subheader("Demonstrating a Quadratic")
-            # Or we could use markdown, like this:
-            # st.markdown("## Demonstrating a Quadratic")
+            st.markdown("#### Quadratic")
             st.line_chart(quadratic_df['y'], x_label="x", y_label="y")
         
         linear_chart_checkbox = st.sidebar.checkbox('Show linear chart on main panel')
         if linear_chart_checkbox:
             # Let's put the chart in the main panel
-            st.subheader("Demonstrating Linear Plot")
+            st.markdown("#### Linear Plot")
             st.line_chart(linear_df, x='index', y=['first column', 'second column'])
             # st.sidebar.line_chart(linear_df)
 
