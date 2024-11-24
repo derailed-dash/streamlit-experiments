@@ -5,22 +5,39 @@ import time
 
 st.write("Hello World!")
 
-# This array will be recreated with each page interaction
-array = np.random.randn(5, 10)
-cols = array.shape[1]
+# Reload the page
+if st.button("Reload"):
+    st.rerun()
 
-with st.expander("Expand tables", expanded=False):  
+if "reload_count" not in st.session_state:
+    st.session_state.reload_count = 0
+else:
+    st.session_state.reload_count += 1
+    
+st.write(f"We've reloaded {st.session_state.reload_count} times")
+    
+# This array WOULD BE recreated with each page interaction
+# So let's store it in a session variable
+if "rand_array" not in st.session_state:
+    st.session_state.rand_array = np.random.randn(5, 10)
+
+cols = st.session_state.rand_array.shape[1]
+
+df = pd.DataFrame(
+    st.session_state.rand_array,
+    columns=('c %d' % i for i in range(cols)))
+
+st.line_chart(df.T, x_label="Col")
+  
+with st.expander("Expand tables...", expanded=False):  
     st.write("Write array using magic command...")
-    array # print using magic command - an alias for st.write()
-
+    st.session_state.rand_array # print using magic command - an alias for st.write()
+        
+    # Create two cols
     left_column, right_column = st.columns(2)
 
-    df = pd.DataFrame(
-        array,
-        columns=('col %d' % i for i in range(cols)))
-
     left_column.write("Write array as interactive dataframe...")
-    left_column.dataframe(array)
+    left_column.dataframe(st.session_state.rand_array)
 
     right_column.write("With as DF with Pandas Styler, highlighting max...")
     right_column.dataframe(df.style.highlight_max(axis=0))
@@ -55,18 +72,18 @@ y = x**2
 quadratic_df = pd.DataFrame({'x': x, 'y': y}) 
 
 # This expander will only show if we've checked a chart in the menu
-with st.expander("Expand charts", expanded=False):  
+with st.expander("Expand charts", expanded=True):  
     if st.sidebar.checkbox('Show linear chart on main panel'):
         # Let's put the chart in the main panel
         st.line_chart(linear_df, x='index', y=['first column', 'second column'])
         # st.sidebar.line_chart(linear_df)
 
-    if st.sidebar.checkbox('Show quadratic chart on main panel'):
+    if st.sidebar.checkbox('Show quadratic chart on main panel', value=True):
         st.line_chart(quadratic_df['y'], x_label="x", y_label="y")
 
 chosen = st.sidebar.radio(
     'Sorting hat',
-    ("Gryffindor", "Ravenclaw", "Hufflepuff", "Slytherin"))
+    ("Gryffindor", "Ravenclaw", "Hufflepuff", "Slytherin"), index=3)
 st.sidebar.write(f"You are in {chosen} house!")
     
 x = st.slider('x')  # 👈 this is a widget
