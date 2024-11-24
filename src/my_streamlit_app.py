@@ -3,8 +3,10 @@ import numpy as np
 import pandas as pd
 import time
 
-st.markdown("# Experimenting with Streamlit")
-st.markdown("---")
+st.sidebar.markdown("# Main page 🎈")
+
+st.write("# Experimenting with Streamlit")
+st.write("---")
 
 # Reload the page
 if st.button("Reload"):
