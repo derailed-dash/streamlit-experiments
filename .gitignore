@@ -39,6 +39,7 @@ coverage.xml
 # secrets
 *.key
 .gitsecret/keys/random_seed
+secrets*
  
 # Random
 .*/

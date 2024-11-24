@@ -3,36 +3,52 @@ import numpy as np
 import pandas as pd
 import time
 
-st.write("Hello World!")
+st.markdown("# Experimenting with Streamlit")
+st.markdown("---")
 
 # Reload the page
 if st.button("Reload"):
     st.rerun()
 
+# Store the counter in session state
+# Note that widgets many their own session state
 if "reload_count" not in st.session_state:
     st.session_state.reload_count = 0
 else:
     st.session_state.reload_count += 1
     
 st.write(f"We've reloaded {st.session_state.reload_count} times")
-    
+st.write("_Retrieve a secret:_ ", st.secrets["my_secret"])
+
+st.markdown("---") # Horizontal rule
+st.markdown("## Working with arrays and dataframes") # Headings automatically get links
+
+st.write(f"A random array of 5 rows and 10 columns, with normal distribution about 0.")
 # This array WOULD BE recreated with each page interaction
 # So let's store it in a session variable
 if "rand_array" not in st.session_state:
+    # Use a normal distribution with mean of 0 and std dev of 1
     st.session_state.rand_array = np.random.randn(5, 10)
 
-cols = st.session_state.rand_array.shape[1]
+col_labels = st.session_state.rand_array.shape[1]
+row_labels = [chr(ord('A') + i) 
+              for i in range(st.session_state.rand_array.shape[0])] # Create labels 'A', 'B', 'C', etc.
 
 df = pd.DataFrame(
     st.session_state.rand_array,
-    columns=('c %d' % i for i in range(cols)))
+    index=row_labels,
+    columns=('c %d' % i for i in range(col_labels)))
 
+st.write(f"Plotted as a line chart...")
 st.line_chart(df.T, x_label="Col")
-  
-with st.expander("Expand tables...", expanded=False):  
+
+with st.expander("Expand tables and plots...", expanded=False):  
     st.write("Write array using magic command...")
     st.session_state.rand_array # print using magic command - an alias for st.write()
-        
+
+    st.write(f"Plotted as a scatter chart, with data transposed...")
+    st.scatter_chart(df, x_label="Col")        
+    
     # Create two cols
     left_column, right_column = st.columns(2)
 
@@ -67,12 +83,14 @@ linear_df = pd.DataFrame({
     })
 linear_df['index'] = linear_df.index # Create new column for x axis
 
+st.markdown("---")
+st.markdown("## Demonstrating a Formula")
 x = np.arange(-10, 11, 1)  # Creates a NumPy array from -10 to 10
 y = x**2
 quadratic_df = pd.DataFrame({'x': x, 'y': y}) 
 
 # This expander will only show if we've checked a chart in the menu
-with st.expander("Expand charts", expanded=True):  
+with st.expander("Expand charts", expanded=True): 
     if st.sidebar.checkbox('Show linear chart on main panel'):
         # Let's put the chart in the main panel
         st.line_chart(linear_df, x='index', y=['first column', 'second column'])
@@ -85,14 +103,18 @@ chosen = st.sidebar.radio(
     'Sorting hat',
     ("Gryffindor", "Ravenclaw", "Hufflepuff", "Slytherin"), index=3)
 st.sidebar.write(f"You are in {chosen} house!")
-    
-x = st.slider('x')  # 👈 this is a widget
+
+st.markdown("---")
+st.markdown("## Some Widgets")
+x = st.slider('Slider for Squares!')  # 👈 this is a widget
 st.write(x, 'squared is', x * x)
 
 # Every widget with a key is automatically added to Session State.
 st.text_input("Your name", key="name")
 st.write(st.session_state.name)
 
+st.markdown("---")
+st.markdown("## Progress bars")
 if st.button('Start long process'):
     "Starting a long computation..."
 
