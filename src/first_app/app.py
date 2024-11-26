@@ -4,10 +4,10 @@ import numpy as np
 import pandas as pd
 import time
 
+st.set_page_config(page_title="Experimenting with Streamlit", page_icon="📈")
 st.sidebar.markdown("# Main page 🎈")
 
 st.title("Experimenting with Streamlit")
-st.write("---")
 
 # Reload the page
 if st.button("Reload"):
@@ -103,6 +103,22 @@ def demo_progress_bar():
             time.sleep(0.02)
 
         progress_state.text("...and now we're done!")
+        
+def advance_option():
+    option_names = ["a", "b", "c"]
+
+    radio_container = st.container() # create an invisible container
+    next = st.button("Advance Option") # Now the button comes after the container
+
+    if next:
+        if st.session_state["radio_option"] == "a":
+            st.session_state.radio_option = "b"
+        elif st.session_state["radio_option"] == "b":
+            st.session_state.radio_option = "c"
+        elif st.session_state["radio_option"] == "c":
+            st.session_state.radio_option = "a"
+
+    option = radio_container.radio("Pick an option", option_names, key="radio_option")
 
 def main():
     reload_counter()
@@ -166,6 +182,8 @@ def main():
 
     st.markdown("---")
     demo_progress_bar()
+    
+    advance_option()
     
 if __name__ == "__main__":
     main()
